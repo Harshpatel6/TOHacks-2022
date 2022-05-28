@@ -4,6 +4,8 @@ df = pd.read_excel(r"C:\Users\justi\Desktop\vehicles.xlsx")
 # User input: Make, Model, Year, Time spent driving today.
 myMake = input("Enter car make: ")
 myModel = input("Enter car model: ")
+if myModel.isdigit():
+    myModel = int(myModel)
 myYear = input("Enter car year: ")
 myYear = int(myYear)
 myDist = input("Enter distance in km drove today: ")
