@@ -39,6 +39,8 @@ def login_clicked(userFrame):
     for widget in userFrame.winfo_children():
         widget.destroy()
 
+    userFrame.pack_forget()
+    userFrame.destroy()
     manufact_page()
 
 
@@ -50,6 +52,9 @@ def manu_clicked(manuFrame):
     #clear frame and go to next page
     for widget in manuFrame.winfo_children():
         widget.destroy()
+
+    manuFrame.pack_forget()
+    manuFrame.destroy()
 
     #model_page()
 
@@ -84,8 +89,8 @@ def welcomePage():
 
 def manufact_page():
     #manu frame
-    manuFrame = ttk.Frame(root)
-    manuFrame.pack(padx=275, pady=10, fill='x', expand=True)
+    manuFrame = tk.Frame(root)
+    manuFrame.pack(padx=275, pady=(225,100), fill='x', expand=False)
 
     #Enter manu label
     manuLabel = ttk.Label(manuFrame, text="Enter the Make of your vehicle")
@@ -99,7 +104,7 @@ def manufact_page():
 
     #Next button
     next_button = ttk.Button(manuFrame, text="Next", command=lambda: manu_clicked(manuFrame))
-    next_button.pack(fill='x', expand=True, pady=(10,175))
+    next_button.pack(fill='x', expand=True, pady=(10,105))
 
     return manuName
 
