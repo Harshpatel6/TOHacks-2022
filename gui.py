@@ -10,7 +10,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime
 from audioop import avg
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 import statistics
 
 df = pd.read_excel("vehicles.xlsx")
@@ -213,7 +213,7 @@ def welcomePage():
 def option_page():
     #option frame
     optionFrame = tk.Frame(root)
-    optionFrame.pack(padx=275, pady=100, fill='x', expand=False)
+    optionFrame.pack(padx=250, pady=100, fill='x', expand=False)
 
     #Enter option label
     manuLabel = ttk.Label(optionFrame, text="Do you want to plot your stats or insert more values?")
@@ -356,7 +356,7 @@ def plot_page():
     avgCO2 = []
     # For loop 7 times, get 7 days from present day, and co2 data from user and average co2 data
     for i in reversed(range(7)):
-        d = datetime.today() - timedelta(days = i)
+        d = date.today() - timedelta(days = i)
         d = str(d).split()
         d = d[0]
         pastSevenDays.append(d)
@@ -414,12 +414,13 @@ def inDatabase(co2, makeCar, modelCar, yearCar, user):
         # Close communication with the database
         connection.close()
 
-    date_object = datetime.date.today()
+    date_object = date.today()
 
     list1 = [user, makeCar, modelCar, yearCar, date_object, co2]
 
     list_as_tuple = tuple(list1)
     inse(list1)
+    return
 
 welcomePage()
 
