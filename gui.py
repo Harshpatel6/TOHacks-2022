@@ -9,6 +9,9 @@ import psycopg2
 import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime
+from audioop import avg
+from datetime import datetime, timedelta
+import statistics
 
 df = pd.read_excel("vehicles.xlsx")
 
@@ -127,17 +130,21 @@ def dist_clicked(distFrame):
     option2_page()
 
 
-def option_clicked(userFrame):
+def option_clicked(optionFrame):
 
-    for widget in userFrame.winfo_children():
+    for widget in optionFrame.winfo_children():
         widget.destroy()
 
-    userFrame.pack_forget()
-    userFrame.destroy()
+    optionFrame.pack_forget()
+    optionFrame.destroy()
 
     if(selected.get() == 'Insert'):
         manufact_page()
-    else: plot_page()
+    else: 
+        plot_page()
+        root.destroy()
+        root.mainloop()
+
     #EITHER MANU PAGE OR PLOT PAGE
 
 
@@ -341,9 +348,39 @@ def dist_page():
     return distName
 
 def plot_page():
-    d = {'Number': [5,5,5,7,8,7,5]}
-    data1 = pd.DataFrame(d)
-    sns.histplot(data=data1, x="Number")
+    df = pd.read_excel(r"ExampleDB.xlsx")
+    myUsername = "justinjyou"
+
+    pastSevenDays = []
+    userCO2 = []
+    avgCO2 = []
+    # For loop 7 times, get 7 days from present day, and co2 data from user and average co2 data
+    for i in reversed(range(7)):
+        d = datetime.today() - timedelta(days = i)
+        d = str(d).split()
+        d = d[0]
+        pastSevenDays.append(d)
+        userCO2AtI = df[df["username"] == myUsername]
+        if not list(userCO2AtI[userCO2AtI["date"] == d]["co2"]):
+            userCO2.append(0)
+        else:
+            userCO2AtI = float(userCO2AtI[userCO2AtI["date"] == d]["co2"])
+            userCO2.append(userCO2AtI)
+        if list(df[df["date"] == d]["co2"]):
+            avgCO2AtI = float(statistics.mean(list(df[df["date"] == d]["co2"])))
+            avgCO2.append(avgCO2AtI)
+        else:
+            avgCO2.append(0)
+
+    print(pastSevenDays)
+    print(userCO2)
+    print(avgCO2)
+
+    plt.plot(pastSevenDays, userCO2, label = "Your CO2 emission")
+    plt.plot(pastSevenDays, avgCO2, label = "Average CO2 emission")
+    plt.legend()
+    plt.ylabel('Daily CO2 emission (g)', fontsize=14)
+    plt.grid(True)
     plt.show()
 
 def inDatabase(co2, makeCar, modelCar, yearCar, user):
