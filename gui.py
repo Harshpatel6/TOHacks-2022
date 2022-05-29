@@ -4,9 +4,13 @@ from tkinter import *
 from tkinter.messagebox import showinfo
 import pandas as pd
 import os
+from tokenize import String
+import psycopg2
 import seaborn as sns
 import matplotlib.pyplot as plt
-df = pd.read_excel(r"vehicles.xlsx")
+import datetime
+
+df = pd.read_excel("vehicles.xlsx")
 
 root = tk.Tk()
 
@@ -55,8 +59,7 @@ selected2 = tk.StringVar()
 def login_clicked(userFrame):
     """ callback when the login button clicked
     """
-    print(username.get())#this value should be stored
-    
+
     #clear frame and go to next page
     for widget in userFrame.winfo_children():
         widget.destroy()
@@ -67,7 +70,6 @@ def login_clicked(userFrame):
 
 def manu_clicked(manuFrame):
     #this value should be stored
-    print(manuNames.get())
     myMake = manuNames.get()
 
     #clear frame and go to next page
@@ -81,7 +83,6 @@ def manu_clicked(manuFrame):
 
 def model_clicked(modelFrame):
     #this value should be stored
-    print(modelName.get())
 
     #clear frame and go to next page
     for widget in modelFrame.winfo_children():
@@ -94,7 +95,6 @@ def model_clicked(modelFrame):
 
 def year_clicked(yearFrame):
     #this value should be stored
-    print(year.get())
 
     #clear frame and go to next page
     for widget in yearFrame.winfo_children():
@@ -107,7 +107,11 @@ def year_clicked(yearFrame):
 
 def dist_clicked(distFrame):
     #this value should be stored
-    print(distName.get())
+    name = (username.get())
+    makeCar = (manuNames.get())
+    modelCar = (modelName.get())
+    yearCar = (year.get())
+    disTrav = (distName.get())
 
     #clear frame and go to next page
     for widget in distFrame.winfo_children():
@@ -116,11 +120,14 @@ def dist_clicked(distFrame):
     distFrame.pack_forget()
     distFrame.destroy()
 
+    co2 = calculator(makeCar, modelCar, yearCar, disTrav)
+
+    inDatabase(co2, makeCar, modelCar, yearCar, name)
+
     option2_page()
 
 
 def option_clicked(userFrame):
-    print(selected.get())
 
     for widget in userFrame.winfo_children():
         widget.destroy()
@@ -135,7 +142,6 @@ def option_clicked(userFrame):
 
 
 def option2_clicked(option2Frame):
-    print(selected2.get())
 
     for widget in option2Frame.winfo_children():
         widget.destroy()
@@ -151,6 +157,25 @@ def option2_clicked(option2Frame):
 
     #EITHER MANU PAGE OR PLOT PAGE
 
+def calculator(myMake, myModel, myYear, myDist):
+    # User input: Make, Model, Year, Time spent driving today.
+    if myModel.isdigit():
+        myModel = int(myModel)
+    myYear = int(myYear)
+    myDist = float(myDist) * 1.60934
+
+    # Find comb08 (combined MPG for fuelType1).
+    i = df[df["make"] == myMake]
+    i = i[i["model"] == myModel]
+    i = i[i["year"] == myYear]
+    i = i["comb08"].mean()
+    myMPG = float(i)
+
+    # Calculate CO2 released. Assumptions: Every gallon of gasoline burned creates 8,887 grams of CO2
+    myGallons = myDist / myMPG
+    myCO2 = myGallons * 8887
+
+    return  myCO2
 
 def welcomePage():
     #Username frame
@@ -195,7 +220,6 @@ def option_page():
     #Next button
     next_button = ttk.Button(optionFrame, text="Next", command=lambda: option_clicked(optionFrame))
     next_button.pack(fill='x', expand=True, pady=(10,105))
-    print(selected.get())
 
     return selected
 
@@ -217,7 +241,6 @@ def option2_page():
     #Next button
     next_button = ttk.Button(option2Frame, text="Next", command=lambda: option2_clicked(option2Frame))
     next_button.pack(fill='x', expand=True, pady=(10,105))
-    print(selected2.get())
 
     return selected2
 
@@ -323,7 +346,43 @@ def plot_page():
     sns.histplot(data=data1, x="Number")
     plt.show()
 
+def inDatabase(co2, makeCar, modelCar, yearCar, user):
+    def exec_statement(conn, stmt, list1):
+        try:
+            with conn.cursor() as cur:
+                cur.execute(stmt, list1)
+                row = cur.fetchone()
+                conn.commit()
+                if row: print(row[0])
+        except psycopg2.ProgrammingError:
+            return
 
+    def inse(list1):
+
+        # Connect to CockroachDB
+        connection = psycopg2.connect(os.environ['DATABASE_URL'])
+
+        statements = [
+
+            """INSERT INTO coEmissionsTable (username, make, model, modelYear, date, co2)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """,
+
+            'SELECT * FROM coEmissionsTable'
+        ]
+
+        for statement in statements:
+            exec_statement(connection, statement, list1)
+
+        # Close communication with the database
+        connection.close()
+
+    date_object = datetime.date.today()
+
+    list1 = [user, makeCar, modelCar, yearCar, date_object, co2]
+
+    list_as_tuple = tuple(list1)
+    inse(list1)
 
 welcomePage()
 
