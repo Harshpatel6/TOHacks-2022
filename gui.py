@@ -39,6 +39,9 @@ manuNames.set("Select make...")
 modelName = tk.StringVar()
 modelName.set("Select model...")
 
+#Store year
+year = tk.StringVar()
+
 #Store dist
 distName = tk.StringVar()
 
@@ -86,6 +89,19 @@ def model_clicked(modelFrame):
 
     modelFrame.pack_forget()
     modelFrame.destroy()
+
+    year_page()
+
+def year_clicked(yearFrame):
+    #this value should be stored
+    print(year.get())
+
+    #clear frame and go to next page
+    for widget in yearFrame.winfo_children():
+        widget.destroy()
+
+    yearFrame.pack_forget()
+    yearFrame.destroy()
 
     dist_page()
 
@@ -255,6 +271,27 @@ def model_page(manuNames):
 
     #Next button
     next_button = ttk.Button(modelFrame, text="Next", command=lambda: model_clicked(modelFrame))
+    next_button.pack(fill='x', expand=True, pady=(10,105))
+
+    return modelName
+
+def year_page():
+    #model frame
+    yearFrame = tk.Frame(root)
+    yearFrame.pack(padx=275, pady=(225,100), fill='x', expand=False)
+
+    #Enter model label
+    yearLabel = ttk.Label(yearFrame, text="Enter the year of your vehicle")
+    yearLabel.config(anchor='center')
+    yearLabel.pack(fill='x', pady=10, side='top', expand=True)
+
+    #Textbox entry for username
+    userEntry = ttk.Entry(yearFrame, textvariable=year)
+    userEntry.pack(fill='x', expand=True)
+    userEntry.focus()
+
+    #Next button
+    next_button = ttk.Button(yearFrame, text="Next", command=lambda: year_clicked(yearFrame))
     next_button.pack(fill='x', expand=True, pady=(10,105))
 
     return modelName
