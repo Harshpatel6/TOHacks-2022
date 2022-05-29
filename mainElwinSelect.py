@@ -47,7 +47,7 @@ def exec_statement(conn, stmt):
 
 
 
-def main():
+def retrieveCO2():
     #Make a function for select, you want the values for either a specific month, or specific weeks and make it into a dataframe so they can graph it
 
     
